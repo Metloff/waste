@@ -1,0 +1,150 @@
+<html>  
+    <head>
+        <title>Статистика</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.bundle.min.js"></script>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body class="gray-bg" style="margin: 0">
+    <div class="container-fluid">
+        <div class="page-head row">
+            <h2>
+                <a href="#">Your Statistic</a> 
+            </h2>    
+        </div>
+
+        <div class="wraper">
+          <div class="row">  
+            <div class="col-md-8">
+              <div class="ibox"> 
+                <div class="ibox-content">
+                  <canvas id="myChart" max-width="300" max-height="300"></canvas>    
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-3">
+              <div class="ibox">
+                <div class="ibox-title">
+                  <h5>Transactions</h5>
+                  <span class="label label-default">UTC+3</span>
+                </div>
+                <div class="ibox-content no-padding">
+                  <ul class="nav nav-tabs">
+                    <!--<li class="active"><a href="#" style="border-left-color: transparent !important; border-radius: 0 !important; border-top-color: transparent !important;">Последние траты</a></li>-->
+                    <li class="active"><a href="#">Последние траты</a></li>
+                    <li><a href="#">Трат</a></li>
+                  </ul>
+                  <ul id='kek'>
+                    <li>Нажмите на график для подробной детализации</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+        
+        </div>
+    </div>
+       
+        
+        
+        <script>
+            window.a = {{.}}
+        </script>
+        <script src="assets/app.js"></script>
+        
+       
+        <style>
+            body {
+                font-family: "open sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            }
+            h1, h2 {
+                font-weight: 100;
+                font-size: 24px;
+                padding-top: 20px;
+            }
+            .ibox {
+                clear: both;
+                margin-bottom: 25px;
+                margin-top: 0;
+                padding: 0;
+            }
+            .ibox-content {
+                background-color: white;
+                color: inherit;
+                padding: 15px 20px 20px 20px;
+                border-color: #e7eaec;
+                border-image: none;
+                border-style: solid solid none;
+                border-width: 1px 0px;
+            }
+            .ibox-content .nav-tabs {
+              border-bottom: 1px solid #e7eaec;
+            }
+
+            /*.ibox-content .nav-tabs li {
+              border: none;
+            }*/
+
+            .ibox-content .nav-tabs li .active a {
+              background-color: red;
+              /*border: 1px solid #e7eaec;
+              border-bottom-color: transparent;
+              border-left-color: transparent;
+              border-top-color: transparent;              
+              border-radius: 0;*/
+            }
+            .ibox-title {
+              background-color: white;
+              border-color: #e7eaec;
+              border-image: none;
+              border-style: solid solid none;
+              border-width: 3px 0px 0;
+              color: inherit;
+              margin-bottom: 0;
+              padding: 14px 15px 7px;
+              min-height: 48px;
+            }
+
+            .ibox-title h5 {
+              display: inline-block;
+              font-size: 14px;
+              margin: 0 0 7px;
+              padding: 0;
+              text-overflow: ellipsis;
+              float: left;
+            }
+            .ibox-title .label {
+              float: left;
+              margin-left: 4px;
+            }
+
+            .ibox-title .label-default {
+              background-color: #1ab394;
+              color: white;
+            }
+            .wraper {
+              padding: 20px 10px 40px;
+            }
+            .no-padding {
+              padding: 0 !important;
+            }
+            .gray-bg {
+                background-color: #f3f3f4;
+            }
+            .gray {
+                color: gray;
+            }
+            a {
+                color: #337ab7;
+                text-decoration: none;
+            }
+            .page-head {
+                background-color: #ffffff;
+                padding: 0px 10px 20px 10px;
+                /*margin-left: -15px;
+                margin-right: -15px;*/
+            }
+       
+        </style>
+  </body>
+</html>
