@@ -34,3 +34,23 @@ type User struct {
 	LastName     string `json:"last_name"`
 	LanguageCode string `json:"language_code"`
 }
+
+type ReplyKeyboardMarkup struct {
+	Keyboard        [][]KeyboardButton `json:"keyboard"`
+	ResizeKeyboard  bool               `json:"resize_keyboard"`   // optional
+	OneTimeKeyboard bool               `json:"one_time_keyboard"` // optional
+	Selective       bool               `json:"selective"`         // optional
+}
+
+type KeyboardButton struct {
+	Text            string `json:"text"`
+	RequestContact  bool   `json:"request_contact"`
+	RequestLocation bool   `json:"request_location"`
+}
+
+type SendingMessage struct {
+	ChatID      int                  `json:"chat_id"`
+	Text        string               `json:"text"`
+	ParseMode   string               `json:"parse_mode"`
+	ReplyMarkup *ReplyKeyboardMarkup `json:"reply_markup"`
+}
