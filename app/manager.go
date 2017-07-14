@@ -18,6 +18,9 @@ const (
 	listPreviousMonthString = "Список за прошлый месяц"
 	info                    = "📍 Инфо"
 	goBackString            = "🔙 Назад"
+	err1                    = "Данные введены не корректно. Попробуйте пожалуйста еще раз"
+	err2                    = "Что то пошло не так. Попробуйте пожалуйста еще раз"
+	succ                    = "Информация успешно сохранена"
 )
 
 var (
@@ -40,6 +43,8 @@ var (
 			{{Text: info}, {Text: goBackString}},
 		},
 	}
+
+	re, _ = regexp.Compile("(?P<amount>\\d{0,})(?P<title>.*)#(?P<category>.*)?")
 )
 
 type manager struct {
@@ -74,6 +79,8 @@ func (m *manager) handleMsg(msg *tg.Message) error {
 		return errors.New("Nil pointer on msg")
 	}
 
+	match := re.FindStringSubmatch(msg.Text)
+
 	switch {
 	case msg.Text == "/start":
 		m.tg.SendMessage(msg.Chat.ID, "Хаю хай", "Markdown", &startKeyboard)
@@ -88,46 +95,14 @@ func (m *manager) handleMsg(msg *tg.Message) error {
 	case msg.Text == goBackString:
 		message := fmt.Sprintf("Чего изволите, %s %s?", msg.User.FirstName, msg.User.LastName)
 		m.tg.SendMessage(msg.Chat.ID, message, "Markdown", &startKeyboard)
+	case match != nil:
+		message := m.addWaste(match, msg.User)
+		m.tg.SendMessage(msg.Chat.ID, message, "Markdown", &startKeyboard)
 	default:
 		message := fmt.Sprintf("Чего изволите, %s %s?", msg.User.FirstName, msg.User.LastName)
 		m.tg.SendMessage(msg.Chat.ID, message, "Markdown", &startKeyboard)
 	}
 
-	re, _ := regexp.Compile("(?P<amount>\\d{0,})(?P<title>.*)#(?P<category>.*)?")
-	match := re.FindStringSubmatch(msg.Text)
-	fmt.Println(match)
-	if match == nil {
-		log.Println("sdf")
-		return errors.New("olol")
-	}
-
-	result := make(map[string]string)
-	for i, name := range re.SubexpNames() {
-		if i != 0 {
-			result[name] = match[i]
-		}
-	}
-	fmt.Printf("Amount: %s  Tilte: %s Category: %s \n", result["amount"], result["title"], result["category"])
-	log.Println(msg.User)
-
-	user, err := m.dbs.FindOrCreateUser(msg.User.ID, msg.User.FirstName, msg.User.LastName, msg.User.LanguageCode)
-	if err != nil {
-		// попросить юзера отправить данные еще раз
-		log.Println(err)
-	}
-
-	amount, err := strconv.ParseUint(result["amount"], 10, 64)
-	if err != nil {
-		// попросить юзера отправить данные еще раз
-		log.Println(err)
-	}
-	_, err = m.dbs.CreateTransaction(user.ID, user.TelegramID, amount, result["title"], result["category"])
-	if err != nil {
-		// отправить ошибку (something wrong)
-		log.Println(err)
-	}
-
-	log.Println(msg)
 	return nil
 }
 
@@ -159,4 +134,36 @@ func (m *manager) givePreviousMonthStatisticList(telegramID uint64) string {
 	}
 
 	return message
+}
+
+func (m *manager) addWaste(match []string, tgUser *tg.User) string {
+	// Добавить валидацию полей
+	// Добавить приведение категории и названия к общему виду (с большой буквы)
+	result := make(map[string]string)
+	for i, name := range re.SubexpNames() {
+		if i != 0 {
+			result[name] = match[i]
+		}
+	}
+	fmt.Printf("Amount: %s  Tilte: %s Category: %s \n", result["amount"], result["title"], result["category"])
+
+	user, err := m.dbs.FindOrCreateUser(tgUser.ID, tgUser.FirstName, tgUser.LastName, tgUser.LanguageCode)
+	if err != nil {
+		return err2
+		log.Println(err)
+	}
+
+	amount, err := strconv.ParseUint(result["amount"], 10, 64)
+	if err != nil {
+		return err1
+		log.Println(err)
+	}
+	_, err = m.dbs.CreateTransaction(user.ID, user.TelegramID, amount, result["title"], result["category"])
+	if err != nil {
+		// отправить ошибку (something wrong)
+		return err2
+		log.Println(err)
+	}
+
+	return succ
 }
