@@ -31,8 +31,9 @@ type User struct {
 }
 
 type MTransaction struct {
-	Amount int    `json:"f1"`
-	Title  string `json:"f2"`
+	Amount    int    `json:"f1"`
+	Title     string `json:"f2"`
+	CreatedAt int64  `json:"f3"`
 }
 
 type ListResult struct {
@@ -54,7 +55,7 @@ type manager struct {
 }
 
 type Manager interface {
-	OneMonthStatistic(userID int) (results []Result)
+	OneMonthStatistic(userID int, month int, year int) (results []Result)
 	FindOrCreateUser(tid uint64, fname string, lname string, lang string) (*User, error)
 	CreateTransaction(uid uint64, tid uint64, amount uint64, title string, category string) (*Transaction, error)
 	CurrentMonthStatistic(userID uint64) (results []ListResult)
@@ -71,12 +72,16 @@ func NewManager(db *gorm.DB) Manager {
 }
 
 // OneMonthStatistic - транзакции за месяц
-func (m *manager) OneMonthStatistic(userID int) (results []Result) {
-	year, month, _ := time.Now().Date()
-	firstDayOfTheMonthDate := time.Date(year, month, 1, 0, 0, 0, 0, time.UTC)
+func (m *manager) OneMonthStatistic(userID int, month int, year int) (results []Result) {
+	// year, month, _ := time.Now().Date()
+	// firstDayOfTheMonthDate := time.Date(year, month, 1, 0, 0, 0, 0, time.UTC)
 	results = []Result{}
 
-	m.db.Raw("select category, json_agg((amount, title)) as raw_json, sum(amount) as amount, count(amount) as count from transactions WHERE created_at > ? AND user_id = ? Group By category", firstDayOfTheMonthDate, userID).Scan(&results)
+	m.db.Raw(`SELECT category, json_agg((amount, title, created_at)) as raw_json, sum(amount) as amount, count(amount) as count 
+			FROM transactions 
+			WHERE date_part('month', TO_TIMESTAMP(created_at)) = ? 
+			AND date_part('year', TO_TIMESTAMP(created_at)) = ?
+			AND user_id = ? Group By category`, month, year, userID).Scan(&results)
 
 	log.Println(results)
 

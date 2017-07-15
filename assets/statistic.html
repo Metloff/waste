@@ -30,12 +30,13 @@
                   <span class="label label-default">UTC+3</span>
                 </div>
                 <div class="ibox-content no-padding">
-                  <ul class="nav nav-tabs">
+                  <div id='categoryName'>jkhjsh</div>
+                  <!--<ul class="nav nav-tabs">-->
                     <!--<li class="active"><a href="#" style="border-left-color: transparent !important; border-radius: 0 !important; border-top-color: transparent !important;">Последние траты</a></li>-->
-                    <li class="active"><a href="#">Последние траты</a></li>
+                    <!--<li class="active"><a href="#">Последние траты</a></li>
                     <li><a href="#">Трат</a></li>
-                  </ul>
-                  <ul id='kek'>
+                  </ul>-->
+                  <ul id='categoryStat'>
                     <li>Нажмите на график для подробной детализации</li>
                   </ul>
                 </div>
@@ -93,6 +94,26 @@
               border-top-color: transparent;              
               border-radius: 0;*/
             }
+
+            .ibox-content #categoryStat li {
+              /*background-color: red;*/
+              border: 1px solid #e7eaec;
+              border-left-color: transparent;
+              border-right-color: transparent;
+              border-radius: 0;
+              padding: 7px;
+            }
+
+            #categoryStat {
+              list-style-type: none;
+              padding-left: 15px;
+            }
+            #categoryName {
+              text-align: center;
+              font-weight: 600;
+              padding: 5px;
+            }
+
             .ibox-title {
               background-color: white;
               border-color: #e7eaec;

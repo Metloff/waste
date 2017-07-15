@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/wastebot/api"
+
 	"github.com/wastebot/app"
 	"github.com/wastebot/dbs"
 	"github.com/wastebot/tg"
@@ -32,11 +34,14 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	log.SetOutput(os.Stdout)
 	dbsManager := dbs.NewManager(db)
-	// apiManger := api.NewManager(dbsManager)
+	apiManger := api.NewManager(dbsManager)
 	tgManager := tg.NewManager(*tgToken)
 	appManager := app.NewManager(dbsManager, tgManager)
+
+	go func() {
+		panic(apiManger.Listen(":3000"))
+	}()
 	appManager.Listen()
-	// apiManger.Listen(":3000")
 }
 
 // PrepareDb - prepare postgres connection

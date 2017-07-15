@@ -12,7 +12,7 @@ type manager struct {
 }
 
 type Manager interface {
-	Listen(port string)
+	Listen(port string) error
 }
 
 // NewManager - конструктор
@@ -21,7 +21,7 @@ func NewManager(dbs dbs.Manager) Manager {
 		dbs: dbs,
 	}
 
-	fpath := "/Users/forapp/go/src/wastebot/assets"
+	fpath := "/Users/forapp/go/src/github.com/wastebot/assets"
 	http.HandleFunc("/", manager.generateHandlerGetStat())
 
 	// GET: Ассеты
@@ -31,7 +31,7 @@ func NewManager(dbs dbs.Manager) Manager {
 }
 
 // Listen - ...
-func (m *manager) Listen(port string) {
+func (m *manager) Listen(port string) error {
 	log.Println("Listen port", port)
-	http.ListenAndServe(port, nil)
+	return http.ListenAndServe(port, nil)
 }

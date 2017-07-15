@@ -71,23 +71,33 @@ var myChart = new Chart(ctx, {
         },
         
 		onClick: function(e, legendItem) {
-            console.log(legendItem[0]._index);
             var category_waste = window.a[legendItem[0]._index]
-            var ul = document.getElementById('kek');
+            var ul = document.getElementById('categoryStat');
+            var catName = document.getElementById('categoryName');
 
-            // Очищаем список
-            for (var i = 0; i < ul.childElementCount; i++) {
-                ul.removeChild(ul.children[i]);
-            };
-
+            // Очищаем список       
+            ul.innerHTML = '';
+            catName.innerHTML = '';
+                      
             // Создаем новый список
             for (var i = 0; i < category_waste.JSON.length; i++) {
                 var li = document.createElement('li');
-                li.innerHTML = category_waste.JSON[i].f2 + ": " + category_waste.JSON[i].f1 + "<small class='gray'>Updated at 2017-04-23 19:44 MSK</small>";
+                li.innerHTML = category_waste.JSON[i].f2 + ": -" + category_waste.JSON[i].f1 + "  <small class='gray'>"+ convertDate(category_waste.JSON[i].f3) +"</small>";
                 ul.appendChild(li);
             }
+            catName.innerHTML = catName.innerHTML + category_waste.Category;  
+            console.log(category_waste);                   
         },
     }
 });
+
+var convertDate = function(unixTime) {
+    var date = new Date(unixTime*1000);
+    var months = ['01','02','03','04','05','06','07','08','09','10','11','12'];
+    var year = date.getFullYear();
+    var month = months[date.getMonth()];
+    var day = date.getDate();
+    return day + "-" + month + "-" + year
+};
 
 // Возможно при заполнении списка можно записывать его под ключем в хеш и от туда доставать при повторном нажатии, а не формировать заново
