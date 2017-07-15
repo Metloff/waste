@@ -79,10 +79,6 @@ func (m *manager) SendMessage(chatID int, text, parse string,
 	keyboard *ReplyKeyboardMarkup) (*Response, error) {
 	uri := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", m.token)
 	var msg SendingMessage
-	var a [][]KeyboardButton
-	log.Println(a)
-	b, _ := json.Marshal(a)
-	log.Println(b)
 
 	msg = SendingMessage{
 		ChatID:      chatID,
