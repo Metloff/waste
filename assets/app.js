@@ -19,25 +19,40 @@ var lineOptions = {
 	// 	mode: "label"
 	// }
 };
-var labels = [];
-var data = [];
+var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+var monthsNumber = ['01','02','03','04','05','06','07','08','09','10','11','12'];
+var labelsBar = [];
+var dataBar = [];
+var labelsLine = [];
+var dataLine = [];
+
 var prepareData = function() {
-    for(var i = 0; i < window.a.length; i++) {
-        labels.push(window.a[i].Category);
-        data.push(window.a[i].Amount);
+    for(var i = 0; i < window.a.CurMonth.length; i++) {
+        labelsBar.push(window.a.CurMonth[i].Category);
+        dataBar.push(window.a.CurMonth[i].Amount);
+    }  
+
+    for(var i = 1; i <= 12; i++) {        
+        for(var j = 0; j < window.a.YearStat.length; j++) {
+            console.log(window.a.YearStat[j].Month);
+            if(window.a.YearStat[j].Month == i) {
+               dataLine.push(window.a.YearStat[j].Amount);
+               return 
+            }
+            dataLine.push(0);  
+        }
     }
-}
+};
 
 var ctx = document.getElementById("myChart");
 prepareData();
-console.log(labels);
 var myChart = new Chart(ctx, {
     type: 'bar',
     data: {
-        labels: labels,
+        labels: labelsBar,
         datasets: [{
             label: 'Потрачено денег',
-            data: data,
+            data: dataBar,
             backgroundColor: [
                 'rgba(26, 179, 148, 0.4)',
                 'rgba(54, 162, 235, 0.2)',
@@ -71,7 +86,7 @@ var myChart = new Chart(ctx, {
         },
         
 		onClick: function(e, legendItem) {
-            var category_waste = window.a[legendItem[0]._index]
+            var category_waste = window.a.CurMonth[legendItem[0]._index]
             var ul = document.getElementById('categoryStat');
             var catName = document.getElementById('categoryName');
 
@@ -82,7 +97,7 @@ var myChart = new Chart(ctx, {
             // Создаем новый список
             for (var i = 0; i < category_waste.JSON.length; i++) {
                 var li = document.createElement('li');
-                li.innerHTML = category_waste.JSON[i].f2 + ": -" + category_waste.JSON[i].f1 + "  <small class='gray'>"+ convertDate(category_waste.JSON[i].f3) +"</small>";
+                li.innerHTML = "<div class='statRow'>" + category_waste.JSON[i].f2 + ": -" + category_waste.JSON[i].f1 + "</div>  <div class='gray'>"+ convertDate(category_waste.JSON[i].f3) + "</div>";
                 ul.appendChild(li);
             }
             catName.innerHTML = catName.innerHTML + category_waste.Category;  
@@ -93,11 +108,28 @@ var myChart = new Chart(ctx, {
 
 var convertDate = function(unixTime) {
     var date = new Date(unixTime*1000);
-    var months = ['01','02','03','04','05','06','07','08','09','10','11','12'];
     var year = date.getFullYear();
-    var month = months[date.getMonth()];
+    var month = monthsNumber[date.getMonth()];
     var day = date.getDate();
     return day + "-" + month + "-" + year
 };
+
+console.log(labelsLine);
+console.log(window.a.YearStat[0].Month);
+
+var ctx2 = document.getElementById("myChart2");
+var myLineChart = new Chart(ctx2, {
+    type: 'line',
+    data: {
+        labels: months,
+        datasets:[{
+            label: "My First Dataset",
+            data: dataLine,
+            fill: false,
+            borderColor: 'rgb(75, 192, 192)',
+            lineTension: 0.1}
+        ]},
+        options: {}
+});
 
 // Возможно при заполнении списка можно записывать его под ключем в хеш и от туда доставать при повторном нажатии, а не формировать заново

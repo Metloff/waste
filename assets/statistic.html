@@ -23,7 +23,7 @@
               </div>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-4">
               <div class="ibox">
                 <div class="ibox-title">
                   <h5>Transactions</h5>
@@ -42,7 +42,17 @@
                 </div>
               </div>
             </div>
-        
+          <!--row close-->            
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <div class="ibox">
+                <div class="ibox-content">
+                  <canvas id="myChart2" max-width="300" max-height="300"></canvas>   
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
     </div>
        
@@ -100,6 +110,7 @@
               border: 1px solid #e7eaec;
               border-left-color: transparent;
               border-right-color: transparent;
+              border-top-color: transparent;
               border-radius: 0;
               padding: 7px;
             }
@@ -107,11 +118,16 @@
             #categoryStat {
               list-style-type: none;
               padding-left: 15px;
+
             }
             #categoryName {
               text-align: center;
               font-weight: 600;
               padding: 5px;
+              border: 1px solid #e7eaec;
+              border-left-color: transparent;
+              border-right-color: transparent;
+              border-top-color: transparent;
             }
 
             .ibox-title {
@@ -154,6 +170,12 @@
             }
             .gray {
                 color: gray;
+                font-size: smaller;
+                display: inline-block                
+            }
+
+            .statRow {
+                display: inline-block
             }
             a {
                 color: #337ab7;

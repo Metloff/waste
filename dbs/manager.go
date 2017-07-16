@@ -50,12 +50,18 @@ type Result struct {
 	JSON     *[]MTransaction
 }
 
+type OneYearStat struct {
+	Month  int
+	Amount int
+}
+
 type manager struct {
 	db *gorm.DB
 }
 
 type Manager interface {
 	OneMonthStatistic(userID int, month int, year int) (results []Result)
+	OneYearStatistic(userID int, year int) (results []OneYearStat)
 	FindOrCreateUser(tid uint64, fname string, lname string, lang string) (*User, error)
 	CreateTransaction(uid uint64, tid uint64, amount uint64, title string, category string) (*Transaction, error)
 	CurrentMonthStatistic(userID uint64) (results []ListResult)
@@ -95,6 +101,20 @@ func (m *manager) OneMonthStatistic(userID int, month int, year int) (results []
 	}
 	return results
 
+}
+
+// OneYearStatistic - количество потраченных денег по месяцам
+func (m *manager) OneYearStatistic(userID int, year int) (results []OneYearStat) {
+	results = []OneYearStat{}
+
+	m.db.Raw(`SELECT  date_part('month', TO_TIMESTAMP(created_at)) as month, sum(amount) as amount 
+			FROM transactions 
+			WHERE date_part('year', TO_TIMESTAMP(created_at)) = ?
+			AND user_id = ? 
+			Group By date_part('month', TO_TIMESTAMP(created_at))`, year, userID).Scan(&results)
+	log.Println(results)
+
+	return results
 }
 
 // CurrentMonthStatistic - транзакции за месяц
