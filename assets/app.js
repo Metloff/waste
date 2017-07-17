@@ -129,7 +129,5 @@ var myLineChart = new Chart(ctx2, {
             borderColor: 'rgb(75, 192, 192)',
             lineTension: 0.1}
         ]},
-        options: {}
+        options: { responsive: true}
 });
-
-// Возможно при заполнении списка можно записывать его под ключем в хеш и от туда доставать при повторном нажатии, а не формировать заново
