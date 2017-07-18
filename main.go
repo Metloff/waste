@@ -39,7 +39,7 @@ func main() {
 	appManager := app.NewManager(dbsManager, tgManager)
 
 	go func() {
-		panic(apiManger.Listen(":3000"))
+		panic(apiManger.Listen("192.168.14.195:3000"))
 	}()
 	appManager.Listen()
 }
@@ -55,3 +55,4 @@ func prepareDb() (db *gorm.DB) {
 
 // TODO:
 // Передавать флагами настройки постгреса
+// Сделать флагом отправляемый урл(первую его часть)

@@ -26,6 +26,7 @@ type User struct {
 	FirstName    string
 	LastName     string
 	LanguageCode string
+	UUID         string
 	CreatedAt    int64
 	UpdatedAt    int64
 }
@@ -60,12 +61,14 @@ type manager struct {
 }
 
 type Manager interface {
-	OneMonthStatistic(userID int, month int, year int) (results []Result)
-	OneYearStatistic(userID int, year int) (results []OneYearStat)
+	OneMonthStatistic(userID uint64, month int, year int) (results []Result)
+	OneYearStatistic(userID uint64, year int) (results []OneYearStat)
 	FindOrCreateUser(tid uint64, fname string, lname string, lang string) (*User, error)
 	CreateTransaction(uid uint64, tid uint64, amount uint64, title string, category string) (*Transaction, error)
 	CurrentMonthStatistic(userID uint64) (results []ListResult)
 	PreviousMonthStatistic(userID uint64) (results []ListResult)
+	SetUUID(tid uint64, uuid string) (*User, error)
+	FindUserByUUID(uuid string) (*User, error)
 }
 
 // NewManager - конструктор
@@ -78,7 +81,7 @@ func NewManager(db *gorm.DB) Manager {
 }
 
 // OneMonthStatistic - транзакции за месяц
-func (m *manager) OneMonthStatistic(userID int, month int, year int) (results []Result) {
+func (m *manager) OneMonthStatistic(userID uint64, month int, year int) (results []Result) {
 	// year, month, _ := time.Now().Date()
 	// firstDayOfTheMonthDate := time.Date(year, month, 1, 0, 0, 0, 0, time.UTC)
 	results = []Result{}
@@ -104,7 +107,7 @@ func (m *manager) OneMonthStatistic(userID int, month int, year int) (results []
 }
 
 // OneYearStatistic - количество потраченных денег по месяцам
-func (m *manager) OneYearStatistic(userID int, year int) (results []OneYearStat) {
+func (m *manager) OneYearStatistic(userID uint64, year int) (results []OneYearStat) {
 	results = []OneYearStat{}
 
 	m.db.Raw(`SELECT  date_part('month', TO_TIMESTAMP(created_at)) as month, sum(amount) as amount 
@@ -197,6 +200,18 @@ func (m *manager) findUser(tid uint64) (*User, error) {
 	return user, nil
 }
 
+func (m *manager) FindUserByUUID(uuid string) (*User, error) {
+	user := &User{}
+
+	err := m.db.Where("uuid = ?", uuid).First(user).Error
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return user, nil
+}
+
 func (m *manager) FindOrCreateUser(tid uint64, fname string, lname string, lang string) (*User, error) {
 	user, err := m.findUser(tid)
 	if err == nil && user != nil {
@@ -204,6 +219,23 @@ func (m *manager) FindOrCreateUser(tid uint64, fname string, lname string, lang 
 	}
 
 	user, err = m.createUser(tid, fname, lname, lang)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (m *manager) SetUUID(tid uint64, uuid string) (*User, error) {
+	user, err := m.findUser(tid)
+	if err != nil {
+		return nil, err
+	}
+
+	user.UUID = uuid
+	user.UpdatedAt = time.Now().Unix()
+
+	err = m.db.Save(user).Error
 	if err != nil {
 		return nil, err
 	}

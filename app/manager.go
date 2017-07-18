@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/satori/go.uuid"
 	"github.com/wastebot/dbs"
 	"github.com/wastebot/tg"
 )
@@ -84,6 +85,12 @@ func (m *manager) handleMsg(msg *tg.Message) error {
 	switch {
 	case msg.Text == "/start":
 		m.tg.SendMessage(msg.Chat.ID, "Хаю хай", "Markdown", &startKeyboard)
+	case match != nil:
+		message := m.addWaste(match, msg.User)
+		m.tg.SendMessage(msg.Chat.ID, message, "Markdown", &startKeyboard)
+	case msg.Text == graph:
+		message := m.generateLink(msg.User.ID)
+		m.tg.SendMessage(msg.Chat.ID, message, "Markdown", &startKeyboard)
 	case msg.Text == list:
 		m.tg.SendMessage(msg.Chat.ID, "Выберите промежуток", "Markdown", &listKeyboard)
 	case msg.Text == listThisMonthString:
@@ -95,9 +102,6 @@ func (m *manager) handleMsg(msg *tg.Message) error {
 	case msg.Text == goBackString:
 		message := fmt.Sprintf("Чего изволите, %s %s?", msg.User.FirstName, msg.User.LastName)
 		m.tg.SendMessage(msg.Chat.ID, message, "Markdown", &startKeyboard)
-	case match != nil:
-		message := m.addWaste(match, msg.User)
-		m.tg.SendMessage(msg.Chat.ID, message, "Markdown", &startKeyboard)
 	default:
 		message := fmt.Sprintf("Чего изволите, %s %s?", msg.User.FirstName, msg.User.LastName)
 		m.tg.SendMessage(msg.Chat.ID, message, "Markdown", &startKeyboard)
@@ -106,13 +110,12 @@ func (m *manager) handleMsg(msg *tg.Message) error {
 	return nil
 }
 
-func (m *manager) giveCurrentMonthStatisticList(telegramID uint64) string {
+func (m *manager) giveCurrentMonthStatisticList(telegramID uint64) (message string) {
 	results := m.dbs.CurrentMonthStatistic(telegramID)
 	if len(results) == 0 {
 		return "У вас нет трат за этот период"
 	}
 
-	var message string
 	for _, res := range results {
 		message += fmt.Sprintf("%s | Кол-во трат: %v | ₽: %v", res.Category, res.Count, res.Amount)
 		message += "\n ---------------\n\n"
@@ -121,13 +124,12 @@ func (m *manager) giveCurrentMonthStatisticList(telegramID uint64) string {
 	return message
 }
 
-func (m *manager) givePreviousMonthStatisticList(telegramID uint64) string {
+func (m *manager) givePreviousMonthStatisticList(telegramID uint64) (message string) {
 	results := m.dbs.PreviousMonthStatistic(telegramID)
 	if len(results) == 0 {
 		return "У вас нет трат за этот период"
 	}
 
-	var message string
 	for _, res := range results {
 		message += fmt.Sprintf("%s | Кол-во трат: %v | ₽: %v", res.Category, res.Count, res.Amount)
 		message += "\n ---------------\n\n"
@@ -149,21 +151,35 @@ func (m *manager) addWaste(match []string, tgUser *tg.User) string {
 
 	user, err := m.dbs.FindOrCreateUser(tgUser.ID, tgUser.FirstName, tgUser.LastName, tgUser.LanguageCode)
 	if err != nil {
-		return err2
 		log.Println(err)
+		return err2
 	}
 
 	amount, err := strconv.ParseUint(result["amount"], 10, 64)
 	if err != nil {
-		return err1
 		log.Println(err)
+		return err1
 	}
 	_, err = m.dbs.CreateTransaction(user.ID, user.TelegramID, amount, result["title"], result["category"])
 	if err != nil {
 		// отправить ошибку (something wrong)
-		return err2
 		log.Println(err)
+		return err2
 	}
 
 	return succ
+}
+
+func (m *manager) generateLink(tid uint64) (message string) {
+	// Creating UUID Version 4
+	uuid := uuid.NewV4().String()
+
+	_, err := m.dbs.SetUUID(tid, uuid)
+	if err != nil {
+		log.Println(err)
+	}
+
+	// message = fmt.Sprintf("http://127.0.0.1:3000/%s", uuid)
+	message = fmt.Sprintf("http://192.168.14.195:3000/%s", uuid)
+	return message
 }
