@@ -49,8 +49,9 @@ var (
 )
 
 type manager struct {
-	dbs dbs.Manager
-	tg  tg.Manager
+	dbs    dbs.Manager
+	tg     tg.Manager
+	appURL string
 }
 
 type Manager interface {
@@ -58,10 +59,11 @@ type Manager interface {
 }
 
 // NewManager - ...
-func NewManager(dbs dbs.Manager, tg tg.Manager) Manager {
+func NewManager(dbs dbs.Manager, tg tg.Manager, appURL string) Manager {
 	return &manager{
-		dbs: dbs,
-		tg:  tg,
+		dbs:    dbs,
+		tg:     tg,
+		appURL: appURL,
 	}
 }
 
@@ -179,7 +181,6 @@ func (m *manager) generateLink(tid uint64) (message string) {
 		log.Println(err)
 	}
 
-	// message = fmt.Sprintf("http://127.0.0.1:3000/%s", uuid)
-	message = fmt.Sprintf("http://192.168.14.195:3000/%s", uuid)
+	message = fmt.Sprintf("%s/%s", m.appURL, uuid)
 	return message
 }
