@@ -124,7 +124,7 @@
                   },
                   title: {
                       display: true,
-                      text: 'Chart.js Bar Chart'
+                      text: 'Статистика за послений месяц'
                   },
                   
               onClick: function(e, legendItem) {
@@ -171,7 +171,13 @@
                       borderColor: 'rgb(75, 192, 192)',
                       lineTension: 0.1}
                   ]},
-                  options: { responsive: true}
+                  options: { 
+                      responsive: true,
+                      title: {
+                        display: true,
+                        text: 'Статистика за послений год'
+                      }
+                  }
           });
         </script>
         
