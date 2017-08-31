@@ -1,18 +1,22 @@
 package api
 
 import (
+	"errors"
 	"html/template"
 	"log"
 	"net/http"
+	"runtime/debug"
 
+	bugsnag "github.com/bugsnag/bugsnag-go"
 	"github.com/gorilla/mux"
 	"github.com/wastebot/dbs"
 )
 
 type manager struct {
-	r             *mux.Router
+	router        *mux.Router
 	dbs           dbs.Manager
 	pageTemplStat *template.Template
+	ico           []byte
 }
 
 type Manager interface {
@@ -20,34 +24,70 @@ type Manager interface {
 }
 
 // NewManager - конструктор
-func NewManager(dbs dbs.Manager, htmlPageStat []byte) Manager {
-	r := mux.NewRouter()
-
-	manager := &manager{
-		r:   r,
-		dbs: dbs,
+func NewManager(dbs dbs.Manager, htmlPageStat, ico []byte) Manager {
+	m := &manager{
+		router: mux.NewRouter(),
+		dbs:    dbs,
+		ico:    ico,
 	}
 
-	manager.pageTemplStat = template.Must(template.New("page_stat.html").
+	// Templates.
+	m.pageTemplStat = template.Must(template.New("page_stat.html").
 		Parse(string(htmlPageStat)))
 
-	fpath := "/Users/forapp/go/src/github.com/wastebot/assets"
-	// GET: Ассеты
-	r.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir(fpath))))
+	// Routes.
+	m.router.
+		Methods("GET").
+		Path("/favicon.ico").
+		Name("Favicon").
+		Handler(m.genFavicon())
 
-	r.HandleFunc("/{key}", manager.generateHandlerGetStat()).Methods("GET")
+	m.router.
+		Methods("GET").
+		Path("/{key}").
+		Name("GetStat").
+		Handler(m.wrapHTMLRec(m.genGetStat()))
 
-	return manager
+	return m
 }
 
 // Listen - функция запуска сервера.
 func (m *manager) Listen(port string) error {
 	srv := &http.Server{
-		Handler: m.r,
+		Handler: m.router,
 		Addr:    port,
 	}
 
 	log.Println("Server starting on", port)
 
 	return srv.ListenAndServe()
+}
+
+// wrapHTMLRec в случае возникновения необработанной паники, обрабатывает панику
+// и перенаправляе пользователя на страницу 500.
+func (m *manager) wrapHTMLRec(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var err error
+		defer func() {
+			rec := recover()
+			if rec != nil {
+				switch t := rec.(type) {
+				case string:
+					err = errors.New(t)
+				case error:
+					err = t
+				default:
+					err = errors.New("panic with unknown error")
+				}
+
+				bugsnag.Notify(err, map[string]interface{}{
+					"stacktrace": string(debug.Stack()),
+					"uri":        r.RequestURI,
+				})
+
+				http.Redirect(w, r, "/page500", 301)
+			}
+		}()
+		h.ServeHTTP(w, r)
+	})
 }

@@ -13,8 +13,8 @@ type Result struct {
 	YearStat []dbs.OneYearStat
 }
 
-func (m *manager) generateHandlerGetStat() func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (m *manager) genGetStat() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		urlVariables := mux.Vars(r)
 		uuid := urlVariables["key"]
 		log.Println(uuid)
@@ -36,5 +36,12 @@ func (m *manager) generateHandlerGetStat() func(w http.ResponseWriter, r *http.R
 		}
 
 		m.pageTemplStat.Execute(w, result)
-	}
+	})
+}
+
+func (m *manager) genFavicon() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// TODO: починить фавикон.
+		w.Write(m.ico)
+	})
 }

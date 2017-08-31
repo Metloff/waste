@@ -70,9 +70,10 @@ func appAction() {
 	defer psqlClient.Close()
 
 	htmlPage := MustAsset("assets/statistic.html")
+	ico := MustAsset("assets/favicon.ico")
 
 	dbsManager := dbs.NewManager(psqlClient)
-	apiManger := api.NewManager(dbsManager, htmlPage)
+	apiManger := api.NewManager(dbsManager, htmlPage, ico)
 	tgManager := tg.NewManager(*tgToken)
 	appManager := app.NewManager(dbsManager, tgManager, *appURL)
 
