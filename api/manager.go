@@ -16,6 +16,7 @@ type manager struct {
 	router        *mux.Router
 	dbs           dbs.Manager
 	pageTemplStat *template.Template
+	page500       *template.Template
 	ico           []byte
 }
 
@@ -24,7 +25,7 @@ type Manager interface {
 }
 
 // NewManager - конструктор
-func NewManager(dbs dbs.Manager, htmlPageStat, ico []byte) Manager {
+func NewManager(dbs dbs.Manager, htmlPageStat, htmlPage500, ico []byte) Manager {
 	m := &manager{
 		router: mux.NewRouter(),
 		dbs:    dbs,
@@ -35,12 +36,21 @@ func NewManager(dbs dbs.Manager, htmlPageStat, ico []byte) Manager {
 	m.pageTemplStat = template.Must(template.New("page_stat.html").
 		Parse(string(htmlPageStat)))
 
+	m.page500 = template.Must(template.New("page_500.html").
+		Parse(string(htmlPage500)))
+
 	// Routes.
 	m.router.
 		Methods("GET").
 		Path("/favicon.ico").
 		Name("Favicon").
 		Handler(m.genFavicon())
+
+	m.router.
+		Methods("GET").
+		Path("/page500").
+		Name("Favicon").
+		Handler(m.genPage500())
 
 	m.router.
 		Methods("GET").

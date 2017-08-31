@@ -39,9 +39,17 @@ func (m *manager) genGetStat() http.Handler {
 	})
 }
 
+// genFavicon возвращает фавикон.
 func (m *manager) genFavicon() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// TODO: починить фавикон.
 		w.Write(m.ico)
+	})
+}
+
+// genPage500 генерирует страницу с сообщением о внутренней ошибке сервера.
+func (m *manager) genPage500() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		m.page500.Execute(w, nil)
 	})
 }

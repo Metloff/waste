@@ -70,11 +70,19 @@ func appAction() {
 	defer psqlClient.Close()
 
 	htmlPage := MustAsset("assets/statistic.html")
+	htmlPage500 := MustAsset("assets/page_500.html")
 	ico := MustAsset("assets/favicon.ico")
 
+	// Models manager.
 	dbsManager := dbs.NewManager(psqlClient)
-	apiManger := api.NewManager(dbsManager, htmlPage, ico)
+
+	// Webserver manager.
+	apiManger := api.NewManager(dbsManager, htmlPage, htmlPage500, ico)
+
+	// Telegram manager.
 	tgManager := tg.NewManager(*tgToken)
+
+	// App manager.
 	appManager := app.NewManager(dbsManager, tgManager, *appURL)
 
 	go func() {
