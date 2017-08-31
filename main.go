@@ -69,8 +69,10 @@ func appAction() {
 	psqlClient := preparePostgresDb(*pgHost, *pgPort, *pgUser, *pgDBName, *pgDBPswd, *pgVerbose)
 	defer psqlClient.Close()
 
+	htmlPage := MustAsset("assets/statistic.html")
+
 	dbsManager := dbs.NewManager(psqlClient)
-	apiManger := api.NewManager(dbsManager)
+	apiManger := api.NewManager(dbsManager, htmlPage)
 	tgManager := tg.NewManager(*tgToken)
 	appManager := app.NewManager(dbsManager, tgManager, *appURL)
 
