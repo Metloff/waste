@@ -1,6 +1,7 @@
 package api
 
 import (
+	"html/template"
 	"log"
 	"net/http"
 
@@ -9,8 +10,9 @@ import (
 )
 
 type manager struct {
-	r   *mux.Router
-	dbs dbs.Manager
+	r             *mux.Router
+	dbs           dbs.Manager
+	pageTemplStat *template.Template
 }
 
 type Manager interface {
@@ -18,7 +20,7 @@ type Manager interface {
 }
 
 // NewManager - конструктор
-func NewManager(dbs dbs.Manager) Manager {
+func NewManager(dbs dbs.Manager, htmlPageStat []byte) Manager {
 	r := mux.NewRouter()
 
 	manager := &manager{
@@ -26,13 +28,14 @@ func NewManager(dbs dbs.Manager) Manager {
 		dbs: dbs,
 	}
 
+	manager.pageTemplStat = template.Must(template.New("page_stat.html").
+		Parse(string(htmlPageStat)))
+
 	fpath := "/Users/forapp/go/src/github.com/wastebot/assets"
 	// GET: Ассеты
 	r.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir(fpath))))
 
 	r.HandleFunc("/{key}", manager.generateHandlerGetStat()).Methods("GET")
-
-	// http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir(fpath))))
 
 	return manager
 }

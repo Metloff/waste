@@ -1,24 +1,3 @@
-var lineOptions = {
-	// animation: false,
-	// scaleShowGridLines: true,
-	// scaleGridLineColor: "rgba(0,0,0,.05)",
-	// scaleGridLineWidth: 1,
-	// pointDot: true,
-	// pointDotRadius: 3.5,
-	// pointDotStrokeWidth: 1,
-	// pointHitDetectionRadius: 10,
-	// datasetStroke: true,
-	// datasetStrokeWidth: 2,
-	// datasetFill: true,
-	// responsive: true,
-	// maintainAspectRatio: false,
-	// legend: {
-	// 	display: false
-	// },
-	// tooltips: {
-	// 	mode: "label"
-	// }
-};
 var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
 var monthsNumber = ['01','02','03','04','05','06','07','08','09','10','11','12'];
 var labelsBar = [];
