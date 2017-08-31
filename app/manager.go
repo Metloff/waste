@@ -22,7 +22,10 @@ const (
 	err1                    = "Данные введены не корректно. Попробуйте пожалуйста еще раз"
 	err2                    = "Что то пошло не так. Попробуйте пожалуйста еще раз"
 	succ                    = "Информация успешно сохранена"
+	startInfo               = "Привет. \nЯ бот, который подсчитывает траты и показывает их в виде красивых графиков. \nДля добавления информации о тратах, необходимо отправить сообщение вида: \nсумма наименование #категория \nНапример: 230 uber #transport"
 )
+
+// TODO: Придумать нормальный текст приветствия (startInfo).
 
 var (
 	nilKeyboard = tg.ReplyKeyboardMarkup{
@@ -86,7 +89,9 @@ func (m *manager) handleMsg(msg *tg.Message) error {
 
 	switch {
 	case msg.Text == "/start":
-		m.tg.SendMessage(msg.Chat.ID, "Хаю хай", "Markdown", &startKeyboard)
+		m.tg.SendMessage(msg.Chat.ID, startInfo, "Markdown", &startKeyboard)
+	case msg.Text == info:
+		m.tg.SendMessage(msg.Chat.ID, startInfo, "Markdown", &startKeyboard)
 	case match != nil:
 		message := m.addWaste(match, msg.User)
 		m.tg.SendMessage(msg.Chat.ID, message, "Markdown", &startKeyboard)
