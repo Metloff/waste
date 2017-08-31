@@ -61,8 +61,8 @@ type manager struct {
 }
 
 type Manager interface {
-	OneMonthStatistic(userID uint64, month int, year int) (results []Result)
-	OneYearStatistic(userID uint64, year int) (results []OneYearStat)
+	OneMonthStatistic(userID uint64) (results []Result)
+	OneYearStatistic(userID uint64) (results []OneYearStat)
 	FindOrCreateUser(tid uint64, fname string, lname string, lang string) (*User, error)
 	CreateTransaction(uid uint64, tid uint64, amount uint64, title string, category string) (*Transaction, error)
 	CurrentMonthStatistic(userID uint64) (results []ListResult)
@@ -81,16 +81,14 @@ func NewManager(db *gorm.DB) Manager {
 }
 
 // OneMonthStatistic - транзакции за месяц
-func (m *manager) OneMonthStatistic(userID uint64, month int, year int) (results []Result) {
-	// year, month, _ := time.Now().Date()
-	// firstDayOfTheMonthDate := time.Date(year, month, 1, 0, 0, 0, 0, time.UTC)
+func (m *manager) OneMonthStatistic(userID uint64) (results []Result) {
 	results = []Result{}
 
 	m.db.Raw(`SELECT category, json_agg((amount, title, created_at)) as raw_json, sum(amount) as amount, count(amount) as count 
 			FROM transactions 
-			WHERE date_part('month', TO_TIMESTAMP(created_at)) = ? 
-			AND date_part('year', TO_TIMESTAMP(created_at)) = ?
-			AND user_id = ? Group By category`, month, year, userID).Scan(&results)
+			WHERE date_part('month', TO_TIMESTAMP(created_at)) = date_part('month', NOW()) 
+			AND date_part('year', TO_TIMESTAMP(created_at)) = date_part('year', NOW())
+			AND user_id = ? Group By category`, userID).Scan(&results)
 
 	log.Println(results)
 
@@ -107,14 +105,14 @@ func (m *manager) OneMonthStatistic(userID uint64, month int, year int) (results
 }
 
 // OneYearStatistic - количество потраченных денег по месяцам
-func (m *manager) OneYearStatistic(userID uint64, year int) (results []OneYearStat) {
+func (m *manager) OneYearStatistic(userID uint64) (results []OneYearStat) {
 	results = []OneYearStat{}
 
 	m.db.Raw(`SELECT  date_part('month', TO_TIMESTAMP(created_at)) as month, sum(amount) as amount 
 			FROM transactions 
-			WHERE date_part('year', TO_TIMESTAMP(created_at)) = ?
+			WHERE date_part('year', TO_TIMESTAMP(created_at)) = date_part('year', NOW())
 			AND user_id = ? 
-			Group By date_part('month', TO_TIMESTAMP(created_at))`, year, userID).Scan(&results)
+			Group By date_part('month', TO_TIMESTAMP(created_at))`, userID).Scan(&results)
 	log.Println(results)
 
 	return results

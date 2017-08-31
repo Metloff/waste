@@ -1,15 +1,12 @@
 package api
 
 import (
-	"html/template"
 	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
 	"github.com/wastebot/dbs"
 )
-
-var statTemplate = template.Must(template.ParseFiles("assets/statistic.html"))
 
 type Result struct {
 	CurMonth []dbs.Result
@@ -20,7 +17,7 @@ func (m *manager) generateHandlerGetStat() func(w http.ResponseWriter, r *http.R
 	return func(w http.ResponseWriter, r *http.Request) {
 		urlVariables := mux.Vars(r)
 		uuid := urlVariables["key"]
-
+		log.Println(uuid)
 		// Ищем пользователя по uuid
 		user, err := m.dbs.FindUserByUUID(uuid)
 		if err != nil {
@@ -30,13 +27,14 @@ func (m *manager) generateHandlerGetStat() func(w http.ResponseWriter, r *http.R
 			return
 		}
 
-		results := m.dbs.OneMonthStatistic(user.ID, 07, 2017)
-		results2 := m.dbs.OneYearStatistic(user.ID, 2017)
+		results := m.dbs.OneMonthStatistic(user.ID)
+		results2 := m.dbs.OneYearStatistic(user.ID)
+
 		result := Result{
 			CurMonth: results,
 			YearStat: results2,
 		}
-		log.Println(result)
-		statTemplate.Execute(w, result)
+
+		m.pageTemplStat.Execute(w, result)
 	}
 }
