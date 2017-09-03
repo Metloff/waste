@@ -1,23 +1,39 @@
 package api
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/wastebot/dbs"
 )
 
-type Result struct {
-	CurMonth []dbs.Result
-	YearStat []dbs.OneYearStat
+// TODO: сделать i18n
+var months = [12]string{"январь", "февраль", "март", "апрель", "май", "июнь", "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь"}
+
+type OneMonthStat struct {
+	Amount     int
+	MonthTitle string
+	Categories []Category
+}
+
+type Category struct {
+	Category     string
+	Amount       int
+	Transactions *[]TransactionView1
+}
+
+type TransactionView1 struct {
+	Amount    int    `json:"f1"`
+	Title     string `json:"f2"`
+	CreatedAt int64  `json:"f3"`
 }
 
 func (m *manager) genGetStat() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		urlVariables := mux.Vars(r)
 		uuid := urlVariables["key"]
-		log.Println(uuid)
+
 		// Ищем пользователя по uuid
 		user, err := m.dbs.FindUserByUUID(uuid)
 		if err != nil {
@@ -27,15 +43,41 @@ func (m *manager) genGetStat() http.Handler {
 			return
 		}
 
-		results := m.dbs.OneMonthStatistic(user.ID)
-		results2 := m.dbs.OneYearStatistic(user.ID)
-
-		result := Result{
-			CurMonth: results,
-			YearStat: results2,
+		yearStatByCategories := m.dbs.OneYearStatistic(user.ID)
+		yearStat := map[int]*OneMonthStat{
+			1:  &OneMonthStat{},
+			2:  &OneMonthStat{},
+			4:  &OneMonthStat{},
+			5:  &OneMonthStat{},
+			3:  &OneMonthStat{},
+			6:  &OneMonthStat{},
+			7:  &OneMonthStat{},
+			8:  &OneMonthStat{},
+			9:  &OneMonthStat{},
+			10: &OneMonthStat{},
+			11: &OneMonthStat{},
+			12: &OneMonthStat{},
 		}
 
-		m.pageTemplStat.Execute(w, result)
+		for _, catForOneMonth := range yearStatByCategories {
+			log.Println("Категории по месяцам: ", catForOneMonth)
+			cat := Category{
+				Category: catForOneMonth.Category,
+				Amount:   catForOneMonth.Amount,
+			}
+
+			transactions := &[]TransactionView1{}
+			err := json.Unmarshal([]byte(catForOneMonth.RawTransactionJSON), transactions)
+			if err != nil {
+				log.Println(err)
+			}
+			cat.Transactions = transactions
+			yearStat[catForOneMonth.Month].Amount += catForOneMonth.Amount
+			yearStat[catForOneMonth.Month].MonthTitle = months[catForOneMonth.Month-1]
+			yearStat[catForOneMonth.Month].Categories = append(yearStat[catForOneMonth.Month].Categories, cat)
+		}
+
+		m.pageTemplStat.Execute(w, yearStat)
 	})
 }
 

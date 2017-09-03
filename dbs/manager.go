@@ -1,7 +1,6 @@
 package dbs
 
 import (
-	"encoding/json"
 	"log"
 	"time"
 
@@ -31,7 +30,7 @@ type User struct {
 	UpdatedAt    int64
 }
 
-type MTransaction struct {
+type TransactionView1 struct {
 	Amount    int    `json:"f1"`
 	Title     string `json:"f2"`
 	CreatedAt int64  `json:"f3"`
@@ -43,17 +42,13 @@ type ListResult struct {
 	Count    int
 }
 
-type Result struct {
-	Category string
-	RawJSON  string
-	Amount   int
-	Count    int
-	JSON     *[]MTransaction
-}
-
-type OneYearStat struct {
-	Month  int
-	Amount int
+// TODO: сделать Amount float32
+type OneMonthStatByCategory struct {
+	Month              int
+	Amount             int
+	Category           string
+	RawTransactionJSON string
+	Transactions       *[]TransactionView1
 }
 
 type manager struct {
@@ -61,8 +56,7 @@ type manager struct {
 }
 
 type Manager interface {
-	OneMonthStatistic(userID uint64) (results []Result)
-	OneYearStatistic(userID uint64) (results []OneYearStat)
+	OneYearStatistic(userID uint64) []OneMonthStatByCategory
 	FindOrCreateUser(tid uint64, fname string, lname string, lang string) (*User, error)
 	CreateTransaction(uid uint64, tid uint64, amount uint64, title string, category string) (*Transaction, error)
 	CurrentMonthStatistic(userID uint64) (results []ListResult)
@@ -80,42 +74,18 @@ func NewManager(db *gorm.DB) Manager {
 	return manager
 }
 
-// OneMonthStatistic - транзакции за месяц
-func (m *manager) OneMonthStatistic(userID uint64) (results []Result) {
-	results = []Result{}
-
-	m.db.Raw(`SELECT category, json_agg((amount, title, created_at)) as raw_json, sum(amount) as amount, count(amount) as count 
-			FROM transactions 
-			WHERE date_part('month', TO_TIMESTAMP(created_at)) = date_part('month', NOW()) 
-			AND date_part('year', TO_TIMESTAMP(created_at)) = date_part('year', NOW())
-			AND user_id = ? Group By category`, userID).Scan(&results)
-
-	log.Println(results)
-
-	for i := range results {
-		transactions := &[]MTransaction{}
-		err := json.Unmarshal([]byte(results[i].RawJSON), transactions)
-		if err != nil {
-			log.Println(err)
-		}
-		results[i].JSON = transactions
-	}
-	return results
-
-}
-
 // OneYearStatistic - количество потраченных денег по месяцам
-func (m *manager) OneYearStatistic(userID uint64) (results []OneYearStat) {
-	results = []OneYearStat{}
-
-	m.db.Raw(`SELECT  date_part('month', TO_TIMESTAMP(created_at)) as month, sum(amount) as amount 
-			FROM transactions 
+func (m *manager) OneYearStatistic(userID uint64) []OneMonthStatByCategory {
+	yearStat := []OneMonthStatByCategory{}
+	m.db.Raw(`SELECT  date_part('month', TO_TIMESTAMP(created_at)) as month, sum(amount) as amount, category,
+			json_agg((amount, title, created_at)) as raw_transaction_json
+			FROM transactions
 			WHERE date_part('year', TO_TIMESTAMP(created_at)) = date_part('year', NOW())
-			AND user_id = ? 
-			Group By date_part('month', TO_TIMESTAMP(created_at))`, userID).Scan(&results)
-	log.Println(results)
+			AND user_id = ?
+			Group By date_part('month', TO_TIMESTAMP(created_at)), category`, userID).Scan(&yearStat)
+	log.Println(yearStat)
 
-	return results
+	return yearStat
 }
 
 // CurrentMonthStatistic - транзакции за месяц

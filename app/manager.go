@@ -146,8 +146,8 @@ func (m *manager) givePreviousMonthStatisticList(telegramID uint64) (message str
 }
 
 func (m *manager) addWaste(match []string, tgUser *tg.User) string {
-	// Добавить валидацию полей
-	// Добавить приведение категории и названия к общему виду (с большой буквы)
+	// TODO: Добавить валидацию полей
+	// TODO: Добавить приведение категории и названия к общему виду (с большой буквы)
 	result := make(map[string]string)
 	for i, name := range re.SubexpNames() {
 		if i != 0 {
