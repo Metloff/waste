@@ -37,9 +37,22 @@
                     <!--<li class="active"><a href="#">Последние траты</a></li>
                     <li><a href="#">Трат</a></li>
                   </ul>-->
-                  <ul id='categoryStat'>
+                  <!-- <ul id='categoryStat'>
                     <li>Нажмите на график для подробной детализации</li>
-                  </ul>
+                  </ul> -->
+                  <div class='row'>
+                    <div class='col-md-12'>
+                      <table class="table">
+                        <tbody id="categoryStat">
+                          <tr>
+                            <td>метро</td>
+                            <td>2000</td>
+                            <td>2-09-2017</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -137,18 +150,33 @@
                   
                   onClick: function(e, legendItem) {
                       var category_waste = window.a[curMonthNumber].Categories[legendItem[0]._index]
-                      var ul = document.getElementById('categoryStat');
+                      // var ul = document.getElementById('categoryStat');
+                      var table = document.getElementById('categoryStat');                      
                       var catName = document.getElementById('categoryName');
 
                       // Очищаем список       
-                      ul.innerHTML = '';
+                      table.innerHTML = '';
                       catName.innerHTML = '';
                                 
                       // Создаем новый список
                       for (var i = 0; i < category_waste.Transactions.length; i++) {
-                          var li = document.createElement('li');
-                          li.innerHTML = "<div class='statRow'>" + category_waste.Transactions[i].f2 + ": -" + category_waste.Transactions[i].f1 + "</div>  <div class='gray'>"+ convertDate(category_waste.Transactions[i].f3) + "</div>";
-                          ul.appendChild(li);
+                          var tr = document.createElement('tr');
+                          var tdCategory = document.createElement('td');
+                          var tdPrice = document.createElement('td');
+                          var tdDate = document.createElement('td');
+
+                          tdCategory.innerHTML = "<td>" + category_waste.Transactions[i].f2 + "</td>";
+                          tdCategory.width = '45%';
+
+                          tdPrice.innerHTML = "<td>" + category_waste.Transactions[i].f1 + "</td>";
+                          tdDate.innerHTML = "<td>" + convertDate(category_waste.Transactions[i].f3) + "</td>";                         
+                          tdDate.width = '25%';
+                          tdDate.className = 'small';
+
+                          tr.appendChild(tdCategory);
+                          tr.appendChild(tdPrice);
+                          tr.appendChild(tdDate);
+                          table.appendChild(tr);
                       }
                       catName.innerHTML = catName.innerHTML + category_waste.Category.charAt(0).toUpperCase() + category_waste.Category.substring(1).toLowerCase();                 
                  },
