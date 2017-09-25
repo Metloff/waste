@@ -51,6 +51,12 @@ type OneMonthStatByCategory struct {
 	Transactions       *[]TransactionView1
 }
 
+type QuickStatistic struct {
+	Day   int
+	Month int
+	Year  int
+}
+
 type manager struct {
 	db *gorm.DB
 }
@@ -63,6 +69,7 @@ type Manager interface {
 	PreviousMonthStatistic(userID uint64) (results []ListResult)
 	SetUUID(tid uint64, uuid string) (*User, error)
 	FindUserByUUID(uuid string) (*User, error)
+	QuickStatistic(userID uint64) QuickStatistic
 }
 
 // NewManager - конструктор
@@ -86,6 +93,28 @@ func (m *manager) OneYearStatistic(userID uint64) []OneMonthStatByCategory {
 	log.Println(yearStat)
 
 	return yearStat
+}
+
+//
+func (m *manager) QuickStatistic(userID uint64) QuickStatistic {
+	quickStat := QuickStatistic{}
+	m.db.Raw(`SELECT  sum(amount) as year
+	FROM transactions
+	WHERE date_part('year', TO_TIMESTAMP(created_at)) = date_part('year', NOW())
+	AND user_id = ?`, userID).Scan(&quickStat)
+
+	m.db.Raw(`SELECT  sum(amount) as month
+	FROM transactions
+	WHERE date_part('month', TO_TIMESTAMP(created_at)) = date_part('month', NOW())
+	AND user_id = ?`, userID).Scan(&quickStat)
+
+	m.db.Raw(`SELECT  sum(amount) as day
+	FROM transactions
+	WHERE date_part('day', TO_TIMESTAMP(created_at)) = date_part('day', NOW())
+	AND user_id = ?`, userID).Scan(&quickStat)
+
+	log.Println(quickStat)
+	return quickStat
 }
 
 // CurrentMonthStatistic - транзакции за месяц

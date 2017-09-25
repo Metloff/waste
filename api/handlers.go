@@ -6,10 +6,16 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/wastebot/dbs"
 )
 
 // TODO: сделать i18n
 var months = [12]string{"январь", "февраль", "март", "апрель", "май", "июнь", "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь"}
+
+type TotalStat struct {
+	YearStat  map[int]*OneMonthStat
+	QuickStat dbs.QuickStatistic
+}
 
 type OneMonthStat struct {
 	Amount     int
@@ -77,7 +83,24 @@ func (m *manager) genGetStat() http.Handler {
 			yearStat[catForOneMonth.Month].Categories = append(yearStat[catForOneMonth.Month].Categories, cat)
 		}
 
-		m.pageTemplStat.Execute(w, yearStat)
+		quickStat := m.dbs.QuickStatistic(user.ID)
+
+		totalStat := TotalStat{
+			YearStat:  yearStat,
+			QuickStat: quickStat,
+		}
+
+		log.Println(totalStat)
+		m.pageTemplStat.Execute(w, totalStat)
+
+		// Потрачено всего за день
+		// Потрачено всего за месяц
+		// Потрачено всего за год
+		// Самая затратная категория в месяце
+
+		// месяц - разбивка категория-потрачено денег
+		// год - разбивка месяц -потрачено за месяц
+
 	})
 }
 

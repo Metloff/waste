@@ -10,11 +10,37 @@
     <div class="container-fluid">
         <div class="page-head row">
             <h2>
-                <a href="#">Your Statistic</a> 
+                <a href="#" style="padding-left: 20px;">Your Statistic</a> 
             </h2>    
         </div>
 
         <div class="wraper">
+          <div class="row">
+            <div class="col-md-3">
+              <div style="background-color: white; border-bottom: 1px solid #e7eaec; margin-bottom: 10px;">
+                  <h4 style="font-size: 95%; letter-spacing: .15em; font-weight: normal; color: #286090; padding: 20px">DAY</h4>
+                  <h2 id="QuickStatDay" style="padding: 0 20px;">100</h2>
+              </div>    
+            </div>
+            <div class="col-md-3">
+                <div style="background-color: white; border-bottom: 1px solid #e7eaec; margin-bottom: 10px;">
+                    <h4 style="font-size: 95%; letter-spacing: .15em; font-weight: normal; color: #286090; padding: 20px">MONTH</h4>
+                    <h2 id="QuickStatMonth" style="padding: 0 20px;">1000</h2>
+                </div>    
+              </div>
+              <div class="col-md-3">
+                  <div style="background-color: white; border-bottom: 1px solid #e7eaec; margin-bottom: 10px;">
+                      <h4 style="font-size: 95%; letter-spacing: .15em; font-weight: normal; color: #286090; padding: 20px">YEAR</h4>
+                      <h2 id="QuickStatYear" style="padding: 0 20px;">10000</h2>
+                  </div>    
+              </div>
+              <div class="col-md-3">
+                  <div style="background-color: white; border-bottom: 1px solid #e7eaec; margin-bottom: 10px;">
+                      <h4 style="font-size: 95%; letter-spacing: .15em; font-weight: normal; color: #286090; padding: 20px">MOST PAY CATEGORY</h4>
+                      <h2 id="MostPayCat" style="padding: 0 20px;">KEK</h2>
+                  </div>  
+              </div>
+          </div>
           <div class="row">  
             <div class="col-md-8">
               <div class="ibox"> 
@@ -32,17 +58,21 @@
                 </div>
                 <div class="ibox-content no-padding">
                   <div id='categoryName'>jkhjsh</div>
-                  <!--<ul class="nav nav-tabs">-->
-                    <!--<li class="active"><a href="#" style="border-left-color: transparent !important; border-radius: 0 !important; border-top-color: transparent !important;">Последние траты</a></li>-->
-                    <!--<li class="active"><a href="#">Последние траты</a></li>
-                    <li><a href="#">Трат</a></li>
-                  </ul>-->
-                  <!-- <ul id='categoryStat'>
-                    <li>Нажмите на график для подробной детализации</li>
-                  </ul> -->
-                  <div class='row'>
-                    <div class='col-md-12'>
-                      <table class="table">
+                  <ul class="nav nav-tabs">
+                    <li id="categoryButton" class="active"><a href="#" onclick="changeTransactionView('category')" style="border-left-color: transparent !important; border-radius: 0 !important; border-top-color: transparent !important;">Последние траты</a></li>
+                    <li id="articleButton"><a href="#" onclick="changeTransactionView('article')">Трат</a></li>
+                  </ul>
+                  <div id="article" style="display: none">
+                    <div style="position: relative; border-bottom: 1px solid rgba(0, 0, 0, 0.125);">
+                      <span style="width: 65%; display: inline-block; min-height: 39px; background-color: #f7f7f7;"></span>
+                      <span style="font-family: 'Helvetica Neue', arial, sans-serif; left: 7%; top: 10px; line-height: 1; position: absolute;">Макдак</span>
+                      <span style="font-family: 'Helvetica Neue', arial, sans-serif;left: 90%;top: 10px; line-height: 1; position: absolute;">65%</span>
+                    </div>
+                  </div>
+                 
+                  <!-- <div id="category" class='row'> -->
+                    <!-- <div class='col-md-12'> -->
+                      <table class="table" id="category">
                         <tbody id="categoryStat">
                           <tr>
                             <td>метро</td>
@@ -51,8 +81,8 @@
                           </tr>
                         </tbody>
                       </table>
-                    </div>
-                  </div>
+                    <!-- </div> -->
+                  <!-- </div> -->
                 </div>
               </div>
             </div>
@@ -82,6 +112,10 @@
           var dataBar = [];
           var labelsLine = [];
           var dataLine = [];
+          var mostPayCat = {
+            amount: 0,
+            title: "",
+          };
 
           var prepareData = function() {
               // Prepare oneMonth graph.
@@ -89,23 +123,116 @@
 
               // Prepare oneYear graph.              
               prepareYearData();
+
+              // Prepare quick statistic data.
+              prepateQuickStatData();
+
+              // Prepare data for ArticleBox.
+              prepareArticleBox();
           };
 
           var prepareMonthData = function() {
             labelsBar = [];
             dataBar = [];
-            for(var i = 0; i < window.a[curMonthNumber].Categories.length; i++) {
-                  labelsBar.push(window.a[curMonthNumber].Categories[i].Category);
-                  dataBar.push(window.a[curMonthNumber].Categories[i].Amount);
-              }  
-              curMonthTitle = window.a[curMonthNumber].MonthTitle
+
+            for(var i = 0; i < window.a.YearStat[curMonthNumber].Categories.length; i++) {
+              labelsBar.push(window.a.YearStat[curMonthNumber].Categories[i].Category);
+              dataBar.push(window.a.YearStat[curMonthNumber].Categories[i].Amount);
+
+              if (mostPayCat.amount < window.a.YearStat[curMonthNumber].Categories[i].Amount) {
+                mostPayCat.amount = window.a.YearStat[curMonthNumber].Categories[i].Amount;
+                mostPayCat.title = window.a.YearStat[curMonthNumber].Categories[i].Category;
+              }
+            }  
+            curMonthTitle = window.a.YearStat[curMonthNumber].MonthTitle
           };
 
           var prepareYearData = function() {
             for(var i = 1; i <= 12; i++) {
-                  dataLine[i-1] = window.a[i].Amount;
+                  dataLine[i-1] = window.a.YearStat[i].Amount;
               }
-          }
+          };
+
+          var prepateQuickStatData = function() {
+            var day = document.getElementById('QuickStatDay');
+            day.innerHTML = window.a.QuickStat.Day;
+
+            var month = document.getElementById('QuickStatMonth');
+            month.innerHTML = window.a.QuickStat.Month;
+
+            var year = document.getElementById('QuickStatYear');
+            year.innerHTML = window.a.QuickStat.Year;
+
+            var mpc = document.getElementById('MostPayCat');
+            mpc.innerHTML = mostPayCat.title;
+          };
+
+          var prepareArticleBox = function() {
+            var divMain = document.getElementById('article');
+
+            // Очищаем список.       
+            divMain.innerHTML = '';
+
+            // Наполняем данными.
+            var articles = {};
+            var cat = window.a.YearStat[curMonthNumber].Categories;
+            
+            for(i = 0; i < cat.length; i++) {
+              for(var j = 0; j < cat[i].Transactions.length; j++) {                
+                if(articles[cat[i].Transactions[j]["f2"]] > 0) {
+                  articles[cat[i].Transactions[j]["f2"]] += cat[i].Transactions[j]["f1"];
+                } else {
+                  articles[cat[i].Transactions[j]["f2"]] = cat[i].Transactions[j]["f1"];
+                }
+                
+              }
+            }
+            
+            // Прервращаем объект в массив массивов, чтобы можно было его отсортировать.
+            // sortable = [['food', 100], ['fitnes', 200]]
+            var sortable = [];
+            for (var key in articles) {
+                sortable.push([key, articles[key]]);
+            }
+
+            sortable.sort(compareNumeric);
+
+            for(i = 0; i < sortable.length; i++ ) {
+              var div = document.createElement('div'); 
+              var spanProgresBar = document.createElement('span');
+              var spanArticleTitle = document.createElement('span');
+              var spanAmountOfPercent = document.createElement('span');
+
+              div.style.position = "relative";
+              div.style.borderBottom = "1px solid rgba(0, 0, 0, 0.125)";
+
+              var fullAmount = window.a.YearStat[curMonthNumber].Amount;
+              var percent = Math.round(sortable[i][1] * 100 / fullAmount);
+              spanProgresBar.style.width = "" + percent + "%";
+              spanProgresBar.style.display = "inline-block";
+              spanProgresBar.style.minHeight = "30px";
+              spanProgresBar.style.backgroundColor = "#f7f7f7";
+
+              spanArticleTitle.innerHTML = sortable[i][0];
+              spanArticleTitle.style.fontFamily = "'Helvetica Neue', arial, sans-serif";
+              spanArticleTitle.style.left = "7%";
+              spanArticleTitle.style.top = "10px";
+              spanArticleTitle.style.lineHeight = "1";
+              spanArticleTitle.style.position = "absolute";
+
+              spanAmountOfPercent.innerHTML = percent + "%";
+              spanAmountOfPercent.style.fontFamily = "'Helvetica Neue', arial, sans-serif";
+              spanAmountOfPercent.style.left = "90%";
+              spanAmountOfPercent.style.top = "10px";
+              spanAmountOfPercent.style.lineHeight = "1";
+              spanAmountOfPercent.style.position = "absolute";
+
+              div.appendChild(spanProgresBar);
+              div.appendChild(spanArticleTitle);
+              div.appendChild(spanAmountOfPercent);
+              divMain.appendChild(div);
+            }
+          };
 
           prepareData();
           var ctx = document.getElementById("oneMonth");
@@ -149,8 +276,7 @@
                   },
                   
                   onClick: function(e, legendItem) {
-                      var category_waste = window.a[curMonthNumber].Categories[legendItem[0]._index]
-                      // var ul = document.getElementById('categoryStat');
+                      var category_waste = window.a.YearStat[curMonthNumber].Categories[legendItem[0]._index]
                       var table = document.getElementById('categoryStat');                      
                       var catName = document.getElementById('categoryName');
 
@@ -159,17 +285,20 @@
                       catName.innerHTML = '';
                                 
                       // Создаем новый список
-                      for (var i = 0; i < category_waste.Transactions.length; i++) {
+                      var transactions = category_waste.Transactions.sort(compareDates);
+                      console.log(transactions);
+                      for (var i = 0; i < transactions.length; i++) {
                           var tr = document.createElement('tr');
                           var tdCategory = document.createElement('td');
                           var tdPrice = document.createElement('td');
                           var tdDate = document.createElement('td');
 
-                          tdCategory.innerHTML = "<td>" + category_waste.Transactions[i].f2 + "</td>";
+                          tdCategory.innerHTML = "<td>" + transactions[i].f2 + "</td>";
                           tdCategory.width = '45%';
+                          tdCategory.id = "tdCategory";
 
-                          tdPrice.innerHTML = "<td>" + category_waste.Transactions[i].f1 + "</td>";
-                          tdDate.innerHTML = "<td>" + convertDate(category_waste.Transactions[i].f3) + "</td>";                         
+                          tdPrice.innerHTML = "<td>" + transactions[i].f1 + "</td>";
+                          tdDate.innerHTML = "<td>" + convertDate(transactions[i].f3) + "</td>";                         
                           tdDate.width = '25%';
                           tdDate.className = 'small';
 
@@ -216,10 +345,41 @@
                         myChart.data.datasets[0].data = dataBar;
                         myChart.data.labels = labelsBar;
                         myChart.options.title.text = 'Статистика за ' + curMonthTitle;
-                        myChart.update();  
+                        myChart.update();
+                        prepareArticleBox(); 
                       },
                   }
           });
+
+          var changeTransactionView = function(buttn) {
+            var article = document.getElementById('article');
+            var category = document.getElementById('category');
+            var categoryButton = document.getElementById('categoryButton');
+            var articleButton = document.getElementById('articleButton');
+            
+            if (buttn === 'article') {
+              article.style.display = '';
+              articleButton.className = 'active';
+              category.style.display = 'none';
+              categoryButton.className = '';              
+            } else {
+              category.style.display = '';
+              categoryButton.className = 'active';
+              article.style.display = 'none';
+              articleButton.className = '';       
+            }
+          };
+
+          function compareNumeric(a, b) {
+            if (a > b) return -1;
+            if (a < b) return 1;
+          };
+
+          function compareDates(a, b) {
+            // Turn your strings into dates, and then subtract them
+            // to get a value that is either negative, positive, or zero.
+            return new Date(b.f3) - new Date(a.f3);
+          };
         </script>
         
        
@@ -346,7 +506,38 @@
                 /*margin-left: -15px;
                 margin-right: -15px;*/
             }
-       
+
+            #tdCategory {
+              padding-left: 15px;
+            }
+
+            h3 {
+                font: 33px sans-serif;
+                margin-top: 30px;
+                text-align: center;
+                text-transform: uppercase;
+            }
+
+            h3.background {
+                position: relative;
+                z-index: 1;
+            } 
+            h3.background:before {
+              border-top: 2px solid #dfdfdf;
+              content:"";
+              margin: 0 auto; /* this centers the line to the full width specified */
+              position: absolute; /* positioning must be absolute here, and relative positioning must be applied to the parent */
+              top: 50%; left: 0; right: 0; bottom: 0;
+              width: 95%;
+              z-index: -1;
+            }
+
+            .quick_stat { 
+              /* to hide the lines from behind the text, you have to set the background color the same as the container */ 
+              background-color: #F3F3F4; 
+              padding: 0 15px; 
+            }
+
         </style>
   </body>
 </html>
